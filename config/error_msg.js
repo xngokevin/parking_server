@@ -1,36 +1,70 @@
-var msg = {
+var msg = {}
 
-	global_error: {
+msg.global = {
+	error: {
 		status: 500,
 		message: "An internal server error occurred. Please try again later."
 	},
+	no_token: {
+		status: 404,
+		message: "Missing token. Please login again."
+	},
+	invalid_token: {
+		status: 400,
+		message: "Failed to authenticate token. Please login again."
+	}
+}
 
-	//User route
-	user_no_email: {
+
+//User route
+msg.user = {
+	//Login
+	login: {
+		status: 500,
+		message: "An error occured logging in. Please try again later."
+	},
+	login_no_email: {
 		status: 404,
 		message: "Missing email address."
 	},
-	user_no_first_name: {
-		status: 404,
-		message: "Missing first name."
-	},
-	user_no_last_name: {
-		status: 404,
-		message: "Missing last name."
-	},
-	user_no_password: {
+	login_no_password: {
 		status: 404,
 		message: "Missing password."
 	},
-	user_create: {
+	login_no_user: {
+		status: 404,
+		message: "Incorrect email or password. Please try again."
+	},
+	login_incorrect_password: {
+		status: 400,
+		message: "Incorrect password. Please try again."
+	},
+
+	//Register
+	register: {
 		status: 500,
 		message: "An error occurred creating the user. Please try again later."
 	},
-	user_exists: {
+	register_no_email: {
+		status: 404,
+		message: "Missing email address."
+	},
+	register_no_first_name: {
+		status: 404,
+		message: "Missing first name."
+	},
+	register_no_last_name: {
+		status: 404,
+		message: "Missing last name."
+	},
+	register_no_password: {
+		status: 404,
+		message: "Missing password."
+	},
+	register_exists: {
 		status: 409,
 		message: "This email is in use. Please use a different email."
 	}
-
 }
 
 module.exports = msg;

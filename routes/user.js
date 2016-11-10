@@ -15,22 +15,23 @@ var bodyParser = require('body-parser');
 var methodOverride = require('method-override')
 var bcrypt = require('bcrypt');
 var salt = bcrypt.genSaltSync(10);
-
 var mysql      = require('mysql');
+
+//Create user pool
 var user_db = userPoolCreate();
 
 
-// parse application/x-www-form-urlencoded
+//Parse application/x-www-form-urlencoded
 router.use(bodyParser.urlencoded({
   extended: true
 }))
-// parse application/json
+//Parse application/json
 router.use(bodyParser.json())
 router.use(methodOverride())
 
 
 
-// route middleware to verify a token
+//Route middleware to verify a token
 apiRoutes.use(function(req, res, next) {
 
   // check header or url parameters or post parameters for token
@@ -39,9 +40,9 @@ apiRoutes.use(function(req, res, next) {
   // decode token
   if (token) {
     	// verifies secret and checks exp
-    	jwt.verify(token, app.get('superSecret'), function(err, decoded) {
+    	jwt.verify(token, app.get('token_secret'), function(err, decoded) {
       	if (err) {
-        	return res.json({ success: false, message: 'Failed to authenticate token.' });
+        	return next(error_msg.global.invalid_token);
       	}
       	else {
         	// if everything is good, save to request for use in other routes
@@ -52,43 +53,62 @@ apiRoutes.use(function(req, res, next) {
 
   	}
   	else {
-	    return res.status(403).send({
-	        success: false,
-	        message: 'No token provided.'
-	    });
+	    return next(config.error_msg.global.no_token);
 
   	}
 });
 
+//Apply to routes that require authorization
 app.use('/auth', apiRoutes);
 
 
-router.get('/login', function(req, res, next) {
+router.post('/login', function(req, res, next) {
+	var select_query = "SELECT id, first_name, last_name, email, password FROM users WHERE email = ?";
 
-	User.findOne({
-		email: req.body.email
-	}, function(err, user) {
+	if(!req.body.email) {
+		return next(error_msg.user.login_no_email);
+	}
+
+	if(!req.body.password) {
+		return next(error_msg.user.login_no_password);
+	}
+
+	user_db.getConnection(function(err, connection) {
 		if(err) {
-			console.log("Finding user error");
+			return next(error_msg.global.error);
 		}
-		else if (user) {
-			if(user.password != req.body.password) {
-				console.log("Password did not match");
-			}
-			else {
-		        var token = jwt.sign(user, config.token_secret, {
-		          expiresInMinutes: 1440 // expires in 24 hours
-		        });
-
-		        //Return information with token
-		        res.json({
-		        	status: 200,
-		        	message: "Successfully logged in.",
-		        	token: token
-		        })
-			}
+		else {
+			connection.query(select_query, [req.body.email], function(err, results) {
+				if(err) {
+					return next(error_msg.user.login);
+				}
+				if(results.length == 0) {
+					return res.send(error_msg.login_no_user);
+				}
+				else {
+					var user = results[0];
+					if(bcrypt.compareSync(req.body.password, user.password)) {
+						var payload = {
+							id: user.id,
+							first_name: user.first_name,
+							last_name: user.last_name,
+							email: user.email
+						};
+						var token = jwt.sign(payload, config.token_secret, {
+							expiresIn: "2 days"
+						})
+						res.send({
+							user: payload,
+							token: token
+						});
+					}
+					else {
+						res.send(error_msg.user.login_incorrect_password);
+					}
+				}
+			});
 		}
-	})
+	});
 });
 
 router.post('/register', function(req, res, next) {
@@ -97,40 +117,39 @@ router.post('/register', function(req, res, next) {
 	var user;
 
 	if(!req.body.first_name) {
-		return res.send(error_msg.no_first_name);
+		return next(error_msg.user.register_no_first_name);
 	}
 
 	if(!req.body.last_name) {
-		return res.send(error_msg.no_last_name)
+		return next(error_msg.user.register_no_last_name)
 	}
 
 	if(!req.body.email) {
-		return res.send(error_msg.no_email);
+		return next(error_msg.user.register_no_email);
 	}
 
 	if(!req.body.password) {
-		return res.send(error_msg.no_pasword);
+		return next(error_msg.user.register_no_password);
 	}
 
 	user_db.getConnection(function(err, connection) {
 		if(err) {
-			return res.send(error_msg.global_error);
+			return next(error_msg.global.error);
 		}
 		else {
 			connection.query(select_query, [req.body.email], function(err, results) {
 				if(err) {
 					connection.release();
-					return res.send(error_msg.global_error);
+					return next(error_msg.user.register);
 				}
 				if(results.length != 0) {
 					connection.release();
-					return res.send(error_msg.user_exists);
+					return next(error_msg.user.register_exists);
 				}
 				else {
 				    bcrypt.hash(req.body.password, salt, function(err, hash) {
 				    	if(err) {
-							return res.send(error_msg.global_error);
-
+							return res.send(error_msg.global.error);
 				    	}
 				    	else {
 							user = {
@@ -143,11 +162,11 @@ router.post('/register', function(req, res, next) {
 							connection.query(insert_query, user, function(err, results) {
 								if(err) {
 									connection.release();
-									return res.send(error_msg.global_error);
+									return next(error_msg.user.register);
 								}
 								else {
 									connection.release();
-									res.send(success_msg.user_create);
+									res.send(success_msg.user.register);
 								}
 							})
 				    	}
@@ -160,8 +179,8 @@ router.post('/register', function(req, res, next) {
 
 router.use(function (err, req, res, next) {
     res.status(err.status || 500);
-    res.render('error', {
-        message: err.message,
+    res.send({
+    	message: err.message || "Internal server error."
     });
 })
 
