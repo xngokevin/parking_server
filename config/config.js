@@ -1,6 +1,13 @@
 var config = {}
 
-config.parking_db = "mongodb://localhost:27017/parking";
-config.user_collection = "users"
+config.token_secret= "test";
+
+config.local_db = {
+	host: '127.0.0.1',
+	user: 'root',
+	password: 'idontng00',
+	database: 'parking'
+}
+
 
 module.exports = config;
