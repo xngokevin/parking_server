@@ -16,4 +16,11 @@ msg.user = {
 	}
 }
 
+msg.stripe = {
+	customer_create: {
+		status: 200,
+		message: "Successfully created customer."
+	}
+}
+
 module.exports = msg;

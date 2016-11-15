@@ -9,6 +9,9 @@ var config = require('../config/config');
 var error_msg = require('../config/error_msg');
 var success_msg = require('../config/success_msg');
 
+//Stripe
+var stripe = require("stripe")(config.stripe_test_key);
+
 var http = require('http');
 var jwt = require('jsonwebtoken');
 var bodyParser = require('body-parser');
@@ -50,11 +53,9 @@ apiRoutes.use(function(req, res, next) {
         		next();
       		}
     	});
-
   	}
   	else {
 	    return next(config.error_msg.global.no_token);
-
   	}
 });
 
@@ -87,6 +88,7 @@ router.post('/login', function(req, res, next) {
 				}
 				else {
 					var user = results[0];
+
 					if(bcrypt.compareSync(req.body.password, user.password)) {
 						var payload = {
 							id: user.id,
@@ -147,30 +149,41 @@ router.post('/register', function(req, res, next) {
 					return next(error_msg.user.register_exists);
 				}
 				else {
-				    bcrypt.hash(req.body.password, salt, function(err, hash) {
-				    	if(err) {
-							return res.send(error_msg.global.error);
-				    	}
-				    	else {
-							user = {
-								first_name: req.body.first_name,
-								last_name: req.body.last_name,
-								email: req.body.email,
-								password: hash,
-								created: new Date().toISOString().slice(0, 19).replace('T', ' ')
-							}
-							connection.query(insert_query, user, function(err, results) {
-								if(err) {
-									connection.release();
-									return next(error_msg.user.register);
-								}
-								else {
-									connection.release();
-									res.send(success_msg.user.register);
-								}
-							})
-				    	}
-				    });
+          stripe.customers.create({
+            description:'',
+            email: req.body.email
+          }, function(err, customer) {
+            if(err) {
+              return next(error_mst.stripe.customer_create);
+            }
+            else {
+              bcrypt.hash(req.body.password, salt, function(err, hash) {
+                if(err) {
+                 return res.send(error_msg.global.error);
+                }
+                else {
+                  user = {
+                    customer_id: customer.id,
+                    first_name: req.body.first_name,
+                    last_name: req.body.last_name,
+                    email: req.body.email,
+                    password: hash,
+                    created: new Date().toISOString().slice(0, 19).replace('T', ' ')
+                  }
+                  connection.query(insert_query, user, function(err, results) {
+                    if(err) {
+                      connection.release();
+                      return next(error_msg.user.register);
+                    }
+                    else {
+                      connection.release();
+                      res.send(success_msg.user.register);
+                    }
+                  })
+                }
+              });
+            }
+          });
 				}
 			})
 		}

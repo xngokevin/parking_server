@@ -67,4 +67,15 @@ msg.user = {
 	}
 }
 
+msg.stripe = {
+	customer_create: {
+		status: 500,
+		message: "An error occurred creating the customer. Please try again later."
+	},
+	customer_no_email: {
+		status: 404,
+		message: "Missing email address."
+	}
+}
+
 module.exports = msg;
