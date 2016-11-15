@@ -75,6 +75,10 @@ msg.stripe = {
 	customer_no_email: {
 		status: 404,
 		message: "Missing email address."
+	},
+	card_create: {
+		status: 500,
+		message: "An error occurred adding the card information. Please try again later."
 	}
 }
 

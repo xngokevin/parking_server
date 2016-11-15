@@ -20,6 +20,10 @@ msg.stripe = {
 	customer_create: {
 		status: 200,
 		message: "Successfully created customer."
+	},
+	card_create: {
+		status: 200,
+		message: "Successfully created card info."
 	}
 }
 

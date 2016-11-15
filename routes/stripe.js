@@ -24,18 +24,15 @@ router.use(bodyParser.urlencoded({
 router.use(bodyParser.json())
 router.use(methodOverride())
 
-
-
 //Route middleware to verify a token
-apiRoutes.use(function(req, res, next) {
-
+router.use(function(req, res, next) {
   // check header or url parameters or post parameters for token
   var token = req.body.token || req.query.token || req.headers['x-access-token'];
 
   // decode token
   if (token) {
     	// verifies secret and checks exp
-    	jwt.verify(token, app.get('token_secret'), function(err, decoded) {
+    	jwt.verify(token, config.token_secret, function(err, decoded) {
       	if (err) {
         	return next(error_msg.global.invalid_token);
       	}
@@ -48,18 +45,17 @@ apiRoutes.use(function(req, res, next) {
 
   	}
   	else {
-	    return next(config.error_msg.global.no_token);
-
+	    return next(error_msg.global.no_token);
   	}
 });
 
 //Apply to routes that require authorization
-app.use('/auth', apiRoutes);
+app.use('/', router);
 
 
 //Create customer
 router.post('/customer', function(req, res, next) {
-  if(!req.body.email) {
+  if(!req.decoded.email) {
     return next(error_msg.stripe.customer_no_email);
   }
 
@@ -74,7 +70,26 @@ router.post('/customer', function(req, res, next) {
       res.send(success_msg.stripe.customer_create);
     }
   });
-})
+});
+
+//Create card
+router.post('/card', function(req, res, next) {
+  var card = req.body;
+  card.object = "card";
+
+  stripe.customers.createSource(
+    req.decoded.customer_id,
+    {source: card},
+    function(err, card) {
+      if(err) {
+        return next(error_msg.stripe.card_create);
+      }
+      else {
+        res.send(success_msg.stripe.card_create);
+      }
+    }
+  )
+});
 
 router.use(function (err, req, res, next) {
     res.status(err.status || 500);

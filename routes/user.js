@@ -64,7 +64,7 @@ app.use('/auth', apiRoutes);
 
 
 router.post('/login', function(req, res, next) {
-	var select_query = "SELECT id, first_name, last_name, email, password FROM users WHERE email = ?";
+	var select_query = "SELECT id, customer_id, first_name, last_name, email, password FROM users WHERE email = ?";
 
 	if(!req.body.email) {
 		return next(error_msg.user.login_no_email);
@@ -92,6 +92,7 @@ router.post('/login', function(req, res, next) {
 					if(bcrypt.compareSync(req.body.password, user.password)) {
 						var payload = {
 							id: user.id,
+              customer_id: user.customer_id,
 							first_name: user.first_name,
 							last_name: user.last_name,
 							email: user.email
