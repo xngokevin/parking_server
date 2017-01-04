@@ -80,7 +80,7 @@ router.post('/login', function(req, res, next) {
           return next(error_msg.user.login);
         }
         if (results.length == 0) {
-          return next(error_msg.login_no_user);
+          return next(error_msg.user.login_no_user);
         } else {
           var user = results[0];
 
