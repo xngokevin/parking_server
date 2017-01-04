@@ -1,7 +1,6 @@
 var express  = require('express');
 var app = express();
 var router = express.Router();
-var apiRoutes = express.Router();
 
 //Config
 var config = require('../config/config');
@@ -23,6 +22,7 @@ router.use(bodyParser.urlencoded({
 //Parse application/json
 router.use(bodyParser.json())
 router.use(methodOverride())
+
 
 //Route middleware to verify a token
 router.use(function(req, res, next) {
@@ -92,10 +92,10 @@ router.post('/card', function(req, res, next) {
 });
 
 router.use(function (err, req, res, next) {
-    res.status(err.status || 500);
-    res.send({
-      message: err.message || "Internal server error."
-    });
+  res.status(err.status || 500);
+  res.send({
+    message: err.message || "Internal server error."
+  });
 })
 
 

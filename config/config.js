@@ -3,10 +3,10 @@ var config = {}
 
 config.token_secret= "test";
 config.local_db = {
-	host: '127.0.0.1',
-	user: 'root',
-	password: 'idontng00',
-	database: 'parking'
+	host: '104.196.234.251',
+	user: 'parking_server',
+	password: 'testicicles',
+	database: 'online_parking_database'
 }
 
 
