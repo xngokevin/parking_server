@@ -21,9 +21,9 @@ router.use(bodyParser.json());
 router.use(methodOverride());
 
 //Checks the database every 5 minutes
-setInterval(function() {
-  console.log("Checking database...");
-}, 300000);
+// setInterval(function() {
+//   console.log("Checking database...");
+// }, 300000);
 
 router.use(function (err, req, res, next) {
   res.status(err.status || 500);
