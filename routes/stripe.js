@@ -10,6 +10,10 @@ var success_msg = require('../config/success_msg');
 //Stripe
 var stripe = require("stripe")(config.stripe_test_key);
 
+//Database
+var mysql = require('mysql');
+var parking_db = parkingPoolCreate();
+
 var http = require('http');
 var jwt = require('jsonwebtoken');
 var bodyParser = require('body-parser');
@@ -91,12 +95,98 @@ router.post('/card', function(req, res, next) {
   )
 });
 
+//Create Transaction
+router.post('/charge', function(req, res, next) {
+  /*
+  Request Body for now.
+    req.body: {
+      parking_id: 1,
+      hours: 1
+    }
+  */
+
+  if(!req.body.parking_id) {
+    return next(error_msg.stripe.no_parking_id);
+  }
+
+  if(!req.body.hours) {
+    return next(error_msg.stripe.no_parking_hours);
+  }
+
+  var select_query = "SELECT * FROM parking_spot WHERE id = ?";
+  parking_db.getConnection(function(err, connection) {
+    if(err) {
+      return next(error_msg.global.error);
+    }
+    else {
+      /*** Query for selecting parking spot information ***/
+      connection.query(select_query, [req.body.parking_id], function(err, results) {
+        if(err) {
+          return next(error_msg.global.error);
+        }
+        else {
+          //Parking spot details
+          var parking_spot = results[0];
+          //Check status of parking spot
+          if(parking_spot.status == "occupied") {
+            //If occupied, return an error
+            return next(error_msg.stripe.parking_occupied);
+          }
+
+          //Amount to be charged (1 dollar per hour)
+          var amount = req.body.hours * 100
+
+          /*** Create a charge with Stripe API ***/
+          stripe.charges.create({
+            amount: amount,
+            currency: "USD",
+            customer: req.decoded.user.customer_id,
+            receipt_email: req.decoded.user.email,
+            statement_descriptor: "Parking"
+          }).then(function(charge) {
+            var update_query = "UPDATE parking_space SET status = ?, occupied_by = ?, start_time = ?, end_time = ?";
+            var start_time = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            var end_time = new Date().addHours(req.body,hours).toISOString().slice(0, 19).replace('T', ' ');
+
+            /*** Query for updating parking spot information ***/
+            parking_db.query(update_query, ["occupied", req.decoded.user.email, start_time, end_time], function(err, results) {
+              if(err) {
+                return next(error_msg.global.error);
+              }
+              else {
+                //Return success message
+                res.send(success_msg.stripe.charge_create);
+              }
+            });
+          }).catch(function(err) {
+            return next(error_msg.global.error);
+          })
+        }
+      });
+    }
+  })
+});
+
 router.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.send({
     message: err.message || "Internal server error."
   });
 })
+
+//Helper function set add hours to a date object
+Date.prototype.addHours= function(h){
+    this.setHours(this.getHours()+h);
+    return this;
+}
+
+function parkingPoolCreate() {
+  var pool = mysql.createPool(config.parking_db, function(err) {
+    console.log(err);
+    console.log("Error connecting to db");
+  })
+  return pool;
+}
 
 
 module.exports = router;

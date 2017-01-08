@@ -12,17 +12,16 @@ var success_msg = require('../config/success_msg');
 //Stripe
 var stripe = require("stripe")(config.stripe_test_key);
 
+//Database
+var mysql = require('mysql');
+var parking_db = parkingPoolCreate();
+
 var http = require('http');
 var jwt = require('jsonwebtoken');
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override')
 var bcrypt = require('bcrypt');
 var salt = bcrypt.genSaltSync(10);
-var mysql = require('mysql');
-
-//Create user pool
-var user_db = userPoolCreate();
-
 
 //Parse application/x-www-form-urlencoded
 router.use(bodyParser.urlencoded({
@@ -71,10 +70,11 @@ router.post('/login', function(req, res, next) {
     return next(error_msg.user.login_no_password);
   }
 
-  user_db.getConnection(function(err, connection) {
+  parking_db.getConnection(function(err, connection) {
     if (err) {
       return next(error_msg.global.error);
-    } else {
+    }
+    else {
       connection.query(select_query, [req.body.email], function(err, results) {
         if (err) {
           return next(error_msg.user.login);
@@ -128,7 +128,7 @@ router.post('/register', function(req, res, next) {
   if (!req.body.password) {
     return next(error_msg.user.register_no_password);
   }
-  user_db.getConnection(function(err, connection) {
+  parking_db.getConnection(function(err, connection) {
     if (err) {
       return next(error_msg.global.error);
     } else {
@@ -186,8 +186,8 @@ router.use(function(err, req, res, next) {
   });
 })
 
-function userPoolCreate() {
-  var pool = mysql.createPool(config.local_db, function(err) {
+function parkingPoolCreate() {
+  var pool = mysql.createPool(config.parking_db, function(err) {
     console.log(err);
     console.log("Error connecting to db");
   })

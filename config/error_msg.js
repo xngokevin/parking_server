@@ -79,6 +79,22 @@ msg.stripe = {
 	card_create: {
 		status: 500,
 		message: "An error occurred adding the card information. Please try again later."
+	},
+	charge_create: {
+		status: 500,
+		message: "An error occurred creating the charge. Please try again later"
+	},
+	no_parking_id: {
+		status: 404,
+		message: "Missing parking id"
+	},
+	no_parking_hours: {
+		status: 404,
+		message: "Missing parking hours"
+	},
+	parking_occupied: {
+		status: 403,
+		message: "Parking spot is currently occupied"
 	}
 }
 

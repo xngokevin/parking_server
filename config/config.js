@@ -2,8 +2,8 @@ var config = {}
 
 
 config.token_secret= "test";
-config.local_db = {
-	host: '104.196.234.251',
+config.parking_db = {
+	host: '104.198.99.166',
 	user: 'parking_server',
 	password: 'testicicles',
 	database: 'online_parking_database'
