@@ -17,7 +17,7 @@ app.use('/api/v1/user', user);
 app.use('/api/v1/stripe', stripe);
 
 //Parking route
-app.use('api/v1/parking', parking);
+app.use('/api/v1/parking', parking);
 
 app.use('/api/v1/monitor', monitor);
 

@@ -46,16 +46,20 @@ router.use(function(req, res, next) {
 
   	}
   	else {
+      console.log('no token');
 	    return next(error_msg.global.no_token);
   	}
 });
 
+//Apply to routes that require authorization
+app.use('/', router);
 
 router.get('/location', function(req, res, next) {
   var select_query = "SELECT id, name, description, address FROM locations";
   /*** Query for selecting location information ***/
   parking_db.query(select_query, function(err, results) {
     if(err) {
+      console.log(err);
       return next(error_msg.global.error);
     }
     else {
@@ -76,6 +80,13 @@ router.get('/location/:id/parking', function(req, res, next) {
     }
   })
 });
+
+router.use(function (err, req, res, next) {
+  res.status(err.status || 500);
+  res.send({
+    message: err.message || "Internal server error."
+  });
+})
 
 
 
