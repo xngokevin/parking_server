@@ -65,28 +65,6 @@ if (cluster.isMaster) {
 
     }, 3000);
 
-    setInterval(function () {
-        console.log('SERVER Request to worker %d', cluster.worker.id);
-        //console.log("Checking server...");
-
-        return http.get({
-                host: "",
-                path: "/"
-            }, function (response) {
-                var body;
-                response.on('data', function () {
-                    body += data;
-                });
-                response.on('end', function () {
-                    var parsed = JSON.parse(body);
-                    console.log(parsed);
-                });
-            }
-        ).on('error', function (e) {
-            console.log("Got error: " + e.message);
-        });
-    }, 3000);
-
     // Bind to a port
     var port = process.env.PORT || 8080;
     app.listen(port, function () {
