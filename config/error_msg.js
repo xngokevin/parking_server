@@ -76,6 +76,10 @@ msg.stripe = {
 		status: 404,
 		message: "Missing email address."
 	},
+	card_retrieve: {
+		status: 500,
+		message: "An error occurred retrieving card information. Please try again later."
+	},
 	card_create: {
 		status: 500,
 		message: "An error occurred adding the card information. Please try again later."
