@@ -59,7 +59,6 @@ router.get('/location', function(req, res, next) {
   /*** Query for selecting location information ***/
   parking_db.query(select_query, function(err, results) {
     if(err) {
-      console.log(err);
       return next(error_msg.global.error);
     }
     else {

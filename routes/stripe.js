@@ -75,6 +75,24 @@ router.post('/customer', function(req, res, next) {
   });
 });
 
+//Retrieve card
+router.get('/card', function(req, res, next) {
+	stripe.customers.listCards(
+		req.decoded.customer_id, {
+			limit: 1
+		},
+		function(err, cards) {
+			if(err) {
+				return next(error_msg.stripe.card_retrieve);
+			}
+			else {
+				console.log(cards.data);
+				res.send(cards.data);
+			}
+		}
+	)
+})
+
 //Create card
 router.post('/card', function(req, res, next) {
   var card = req.body;
@@ -85,7 +103,16 @@ router.post('/card', function(req, res, next) {
     {source: card},
     function(err, card) {
       if(err) {
-        return next(error_msg.stripe.card_create);
+        if(err.type == "StripeCardError") {
+        	return res.send({
+        		status: 402,
+        		type: err.type,
+        		message: err.message
+        	})
+        }
+        else {
+			return next(error_msg.stripe.card_create);
+        }
       }
       else {
         res.send(success_msg.stripe.card_create);
@@ -121,7 +148,7 @@ router.post('/charge', function(req, res, next) {
       /*** Query for selecting parking spot information ***/
       connection.query(select_query, [req.body.parking_id], function(err, results) {
         if(err) {
-          return next(error_msg.global.error);
+          return next(error_msg.global.errssssr);
         }
         else {
           //Parking spot details
