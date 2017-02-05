@@ -131,6 +131,7 @@ router.post('/charge', function(req, res, next) {
     }
   */
 
+
   if(!req.body.parking_id) {
     return next(error_msg.stripe.no_parking_id);
   }
@@ -139,7 +140,11 @@ router.post('/charge', function(req, res, next) {
     return next(error_msg.stripe.no_parking_hours);
   }
 
-  var select_query = "SELECT * FROM parking_spot WHERE id = ?";
+  if(!req.body.location_id){
+    return next(error_msg.stripe.no_location_id);
+  }
+
+  var select_query = "SELECT * FROM parking_space WHERE id = ?";
   parking_db.getConnection(function(err, connection) {
     if(err) {
       return next(error_msg.global.error);
@@ -147,8 +152,9 @@ router.post('/charge', function(req, res, next) {
     else {
       /*** Query for selecting parking spot information ***/
       connection.query(select_query, [req.body.parking_id], function(err, results) {
+        console.log(err);
         if(err) {
-          return next(error_msg.global.errssssr);
+          return next(error_msg.global.error);
         }
         else {
           //Parking spot details
@@ -160,30 +166,43 @@ router.post('/charge', function(req, res, next) {
           }
 
           //Amount to be charged (1 dollar per hour)
-          var amount = req.body.hours * 100
-
+          var amount = req.body.hours * 100;
+          console.log(req.decoded);
           /*** Create a charge with Stripe API ***/
           stripe.charges.create({
             amount: amount,
             currency: "USD",
-            customer: req.decoded.user.customer_id,
-            receipt_email: req.decoded.user.email,
+            customer: req.decoded.customer_id,
+            receipt_email: req.decoded.email,
             statement_descriptor: "Parking"
           }).then(function(charge) {
-            var update_query = "UPDATE parking_space SET status = ?, occupied_by = ?, start_time = ?, end_time = ?";
+            var update_query = "UPDATE parking_space SET status = ?, occupied_by = ?, customer_id = ?,start_time = ?, end_time = ?, transaction_id = ? WHERE id = ?";
             var start_time = new Date().toISOString().slice(0, 19).replace('T', ' ');
-            var end_time = new Date().addHours(req.body,hours).toISOString().slice(0, 19).replace('T', ' ');
-
+            var end_time = new Date().addHours(req.body.hours).toISOString().slice(0, 19).replace('T', ' ');
+            console.log(err);
             /*** Query for updating parking spot information ***/
-            parking_db.query(update_query, ["occupied", req.decoded.user.email, start_time, end_time], function(err, results) {
+            parking_db.query(update_query, ["occupied", req.decoded.email, req.decoded.customer_id , start_time, end_time, charge.id, req.body.parking_id], function(err, results) {
               if(err) {
+                console.log(err);
                 return next(error_msg.global.error);
               }
               else {
                 //Return success message
                 res.send(success_msg.stripe.charge_create);
+                var insert_query= "INSERT INTO transactions (transaction_id, created, customer_id, amount, failure_code, failure_message, email, invoice, paid, refunded, location_id, parking_space_id) VALUES (?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?, ?, ?)";
+                var created = new Date();
+                console.log(charge);
+                parking_db.query(insert_query, [charge.id, charge.created, charge.customer, charge.amount, req.decoded.email, charge.invoice, charge.paid, charge.refunded, req.body.location_id, req.body.parking_id], function(err, results){
+                  if(err){
+                    console.log(err);
+                    return next(error_msg.global.error);
+                  }else{
+                    console.log("SUCCESS");
+                  }
+                })
+
               }
-            });
+            })
           }).catch(function(err) {
             return next(error_msg.global.error);
           })

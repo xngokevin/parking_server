@@ -96,6 +96,10 @@ msg.stripe = {
 		status: 404,
 		message: "Missing parking hours"
 	},
+	no_location_id: {
+		status: 404,
+		message: "Missing location ID"
+	},
 	parking_occupied: {
 		status: 403,
 		message: "Parking spot is currently occupied"
