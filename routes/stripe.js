@@ -86,7 +86,6 @@ router.get('/card', function(req, res, next) {
 				return next(error_msg.stripe.card_retrieve);
 			}
 			else {
-				console.log(cards.data);
 				res.send(cards.data);
 			}
 		}
@@ -119,6 +118,21 @@ router.post('/card', function(req, res, next) {
       }
     }
   )
+});
+
+router.delete('/card', function(req, res, next) {
+	stripe.customers.deleteCard(
+		req.decoded.customer_id,
+		req.query.id,
+		function(err, confirmation) {
+			if(err) {
+				return next(error_msg.stripe.card_delete);
+			}
+			else {
+				res.send(success_msg.stripe.card_delete);
+			}
+		}
+	);
 });
 
 //Create Transaction

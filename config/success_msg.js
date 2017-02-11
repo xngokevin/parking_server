@@ -25,6 +25,10 @@ msg.stripe = {
 		status: 200,
 		message: "Successfully created card info."
 	},
+	card_delete: {
+		status: 200,
+		message: "Successfully deleted card info."
+	},
 	charge_create: {
 		status: 200,
 		message: "Successfully created charge."

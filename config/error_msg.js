@@ -84,6 +84,10 @@ msg.stripe = {
 		status: 500,
 		message: "An error occurred adding the card information. Please try again later."
 	},
+	card_delete: {
+		status: 500,
+		message: "An error occurred deleting the card information. Please try again later."
+	},
 	charge_create: {
 		status: 500,
 		message: "An error occurred creating the charge. Please try again later"
