@@ -64,6 +64,20 @@ msg.user = {
 	register_exists: {
 		status: 409,
 		message: "This email is in use. Please use a different email."
+	},
+
+	//Verify
+	verify_no_email_key: {
+		status: 404,
+		message: "Missing email key."
+	},
+	verify_invalid_email_key: {
+		status: 400,
+		message: "The link is invalid or expired. Please register again."
+	},
+	verify_email_activated: {
+		status: 400,
+		message: "This email has already been activated."
 	}
 }
 

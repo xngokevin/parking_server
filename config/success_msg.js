@@ -13,6 +13,12 @@ msg.user = {
 	register: {
 		status: 200,
 		message: "Successfully created user."
+	},
+
+	//Verify
+	verify: {
+		status: 200,
+		message: "Successfully activated email address. You may now login."
 	}
 }
 
