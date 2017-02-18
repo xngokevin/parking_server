@@ -1,14 +1,13 @@
 var express = require('express');
 var app = express();
 var router = express.Router();
-var cluster = require('cluster');
 
 //Config
 var config = require('../config/config');
 var error_msg = require('../config/error_msg');
 var success_msg = require('../config/success_msg');
 var mysql = require('mysql');
-
+var parking_db = parkingPoolCreate();
 
 var http = require('http');
 var jwt = require('jsonwebtoken');
@@ -23,91 +22,51 @@ router.use(bodyParser.urlencoded({
 router.use(bodyParser.json());
 router.use(methodOverride());
 
-// // Code to run if we're in the master process
-// if (cluster.isMaster) {
-//
-//     // Count the machine's CPUs
-//     // var cpuCount = require('os').cpus().length;
-//     var cpuCount = 2;
-//
-//     // Create a worker for each CPU
-//     for (var i = 0; i < cpuCount; i += 1) {
-//         cluster.fork();
-//     }
-//
-//     // Listen for dying workers
-//     cluster.on('exit', function (worker) {
-//
-//         // Replace the dead worker, we're not sentimental
-//         console.log('Worker %d died :(', worker.id);
-//         cluster.fork();
-//
-//     });
-//
-// // Code to run if we're in a worker process
-// } else {
-//     var connection = mysql.createConnection({
-//         host: '104.198.99.166',
-//         user: 'parking_server',
-//         password: 'testicicles',
-//         database: 'online_parking_database'
-//     });
-//     connection.connect(function (error) {
-//         if (error) {
-//             console.log('Cannot establish connection to database...');
-//             return;
-//         }
-//         console.log('Database connection established...');
-//     });
-//     if (cluster.worker.id == 1) {
-//         //Checks the database every 5 minutes
-//             console.log('DB Request to worker %d', cluster.worker.id);
-//             //console.log("Checking database...");
-//
-//
-//     } else if(cluster.worker.id == 2) {
-//             // Bind to a port
-//             var port = process.env.PORT || 8080;
-//             app.listen(port, function () {
-//                 console.log("Express server listening on port %d in %s mode", port, app.settings.env);
-//                 console.log('Worker %d running!', cluster.worker.id);
-//
-//             });
-//     }
-//
-//
-//     // setInterval(function () {
-//     //     console.log('SERVER Request to worker %d', cluster.worker.id);
-//     //     //console.log("Checking server...");
-//     //
-//     //     return http.get({
-//     //             host: "",
-//     //             path: "/"
-//     //         }, function (response) {
-//     //             var body;
-//     //             response.on('data', function () {
-//     //                 body += data;
-//     //             });
-//     //             response.on('end', function () {
-//     //                 var parsed = JSON.parse(body);
-//     //                 console.log(parsed);
-//     //             });
-//     //         }
-//     //     ).on('error', function (e) {
-//     //         console.log("Got error: " + e.message);
-//     //     });
-//     // }, 3000);
-//
-//
-// }
-//Checks the database every 5 minutes
-//setInterval(function() {
-//  console.log("Checking database...");
-//}, 3000);
 
-//setInterval(function(){
-//  console.log("Checking server...");
-//}, 3000);
+var counter=0;
+var query = "SELECT * FROM parking_space;";
+ var alert = function() {
+     parking_db.getConnection(function (err, connection) {
+         if (err) {
+             return next(error_msg.global.error);
+         }
+         else {
+             connection.query(query, function (err, results) {
+                 connection.release();
+                 if (err) {
+                     console.log(err);
+                 }
+                 else if (results.length == 0) {
+                     console.log("NO DATA");
+                 }
+                 else {
+                     var spaces = results;
+                     var today = getDateTime().split(" ")[1];
+                     var todaySeconds = parseInt(today.split(":")[0]) * 3600 + parseInt(today.split(":")[1] * 60) + parseInt(today.split(":"));
+                     if(counter == 10){
+                         counter = 0;
+                     }
+                     counter++;
+                     console.log("COUNTER: " + counter);
+                     for (var i = 0; i < spaces.length; i++) {
+                         var date = new Date(spaces[i].end_time).toTimeString().split(" ")[0];
+                         var dateSeconds = parseInt(date.split(":")[0]) * 3600 + parseInt(date.split(":")[1]) * 60 + parseInt(date.split(":"));
+                         var difference = Math.abs(dateSeconds - todaySeconds);
+                         console.log("DIFFERENCE: " + difference);
+                         if (difference < 900 && difference > 840) {
+                             console.log("REPORTED REPORTED REPORTED!!!");
+                         }
+                     }
+                     console.log("\n");
+                 }
+             })
+         }
+
+
+     })
+ }
+
+setInterval(alert, 3000);
 
 router.use(function (err, req, res, next) {
     res.status(err.status || 500);
@@ -116,13 +75,39 @@ router.use(function (err, req, res, next) {
     });
 });
 
-function userPoolCreate() {
-    var pool = mysql.createPool(config.local_db, function (err) {
+function parkingPoolCreate() {
+    var pool = mysql.createPool(config.parking_db, function (err) {
         console.log(err);
         console.log("Error connecting to db");
     });
     return pool;
 }
 
+function getDateTime() {
+    var now     = new Date();
+    var year    = now.getFullYear();
+    var month   = now.getMonth()+1;
+    var day     = now.getDate();
+    var hour    = now.getHours();
+    var minute  = now.getMinutes();
+    var second  = now.getSeconds();
+    if(month.toString().length == 1) {
+        var month = '0'+month;
+    }
+    if(day.toString().length == 1) {
+        var day = '0'+day;
+    }
+    if(hour.toString().length == 1) {
+        var hour = '0'+hour;
+    }
+    if(minute.toString().length == 1) {
+        var minute = '0'+minute;
+    }
+    if(second.toString().length == 1) {
+        var second = '0'+second;
+    }
+    var dateTime = year+'/'+month+'/'+day+' '+hour+':'+minute+':'+second;
+    return dateTime;
+}
 
 module.exports = router;
