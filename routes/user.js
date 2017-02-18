@@ -12,9 +12,16 @@ var success_msg = require('../config/success_msg');
 //Stripe
 var stripe = require("stripe")(config.stripe_test_key);
 
+//Nodemailer for sending email
+const nodemailer = require('nodemailer');
+var transporter = nodemailer.createTransport(config.smtp_transport);
+
 //Database
 var mysql = require('mysql');
 var parking_db = parkingPoolCreate();
+
+//Random string generator
+var crypto = require('crypto');
 
 var http = require('http');
 var jwt = require('jsonwebtoken');
@@ -81,7 +88,8 @@ router.post('/login', function(req, res, next) {
         }
         if (results.length == 0) {
           return next(error_msg.user.login_no_user);
-        } else {
+        } 
+        else {
           var user = results[0];
 
           if (bcrypt.compareSync(req.body.password, user.password)) {
@@ -111,7 +119,7 @@ router.post('/login', function(req, res, next) {
 router.post('/register', function(req, res, next) {
   var select_query = "SELECT email FROM users WHERE email = ?";
   var insert_query = "INSERT INTO users SET ?";
-  var user;
+  var user, email_key;
 
   if (!req.body.first_name) {
     return next(error_msg.user.register_no_first_name);
@@ -131,7 +139,8 @@ router.post('/register', function(req, res, next) {
   parking_db.getConnection(function(err, connection) {
     if (err) {
       return next(error_msg.global.error);
-    } else {
+    } 
+    else {
       connection.query(select_query, [req.body.email], function(err, results) {
         if (err) {
           connection.release();
@@ -146,19 +155,22 @@ router.post('/register', function(req, res, next) {
             email: req.body.email
           }, function(err, customer) {
             if (err) {
+              console.log(err);
               return next(error_mst.stripe.customer_create);
             } else {
               bcrypt.hash(req.body.password, salt, function(err, hash) {
                 if (err) {
                   return res.send(error_msg.global.error);
                 } else {
+                  email_key =  crypto.randomBytes(52).toString('hex');
                   user = {
                     customer_id: customer.id,
                     first_name: req.body.first_name,
                     last_name: req.body.last_name,
                     email: req.body.email,
                     password: hash,
-                    created: new Date().toISOString().slice(0, 19).replace('T', ' ')
+                    created: new Date().toISOString().slice(0, 19).replace('T', ' '),
+                    email_key: email_key
                   }
                   connection.query(insert_query, user, function(err, results) {
                     if (err) {
@@ -166,11 +178,74 @@ router.post('/register', function(req, res, next) {
                       return next(error_msg.user.register);
                     } else {
                       connection.release();
-                      res.send(success_msg.user.register);
+
+                      //Send email with link for verification
+                      host=req.get('host');
+                      link="http://" + req.get('host') + "/user/verify/" + email_key;
+                      console.log(link);
+                      mail_options={
+                          to : req.body.email,
+                          subject : "Email Verification at Online Parking",
+                          html : "Hello,<br> Please click on the link to verify your email.<br><a href=" + link + ">Click here to verify</a>" 
+                      }
+                      transporter.sendMail(mail_options, (error, info) => {
+                          if (error) {
+                            return console.log(error);
+                          }
+                          else {
+                            res.send(success_msg.user.register);
+
+                          }
+                          console.log('Message %s sent: %s', info.messageId, info.response);
+                      });
                     }
                   })
                 }
               });
+            }
+          });
+        }
+      })
+    }
+  })
+});
+
+
+router.put('/verify/:email_key', function(req, res, next) {
+  if(!req.params.email_key) {
+    return next(error_msg.user.verify_no_email_key);
+  }
+  parking_db.getConnection(function(err, connection) {
+    if(err) {
+      return next(error_msg.global.error);
+    }
+    else {
+      var select_query = "SELECT activated FROM users WHERE email_key = ?";
+      connection.query(select_query, [req.params.email_key], function(err, results) {
+        if(err) {
+          console.log(err);
+          return next(error_msg.global.error);
+        }
+        if(results.length === 0) {
+          return next(error_msg.user.verify_invalid_email_key);
+        }
+        var user = results[0];
+
+        if(user.activated == 1) {
+          return next(error_msg.user.verify_email_activated);
+        }
+        else {
+          var update_query = "UPDATE users SET activated = 1, email_key = NULL WHERE email_key = ?";
+          connection.query(update_query, [req.params.email_key], function(err, results) {
+            if(err) {
+              console.log(err);
+              return next(error_msg.global.error);
+            }
+            if(results.changedRows == 0) {
+              return next(error_msg.user.verify_invalid_email_key);
+            }
+            else {
+              res.send(success_msg.user.verify);
             }
           });
         }

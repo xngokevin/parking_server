@@ -67,11 +67,13 @@ router.get('/location', function(req, res, next) {
   })
 });
 
-router.get('/location/:id/parking', function(req, res, next) {
-  var select_query = "SELECT id, name, description, address FROM locations WHERE location_id = ?";
+router.get('/location/:id', function(req, res, next) {
+  console.log("HERE");
+  var select_query = "SELECT id, space_id, status FROM parking_space WHERE location_id = ?";
   /*** Query for selecting parking information from location id***/
   parking_db.query(select_query, [req.params.id], function(err, results) {
     if(err) {
+      console.log(err);
       return next(error_msg.global.error);
     }
     else {

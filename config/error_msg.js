@@ -64,6 +64,20 @@ msg.user = {
 	register_exists: {
 		status: 409,
 		message: "This email is in use. Please use a different email."
+	},
+
+	//Verify
+	verify_no_email_key: {
+		status: 404,
+		message: "Missing email key."
+	},
+	verify_invalid_email_key: {
+		status: 400,
+		message: "The link is invalid or expired. Please register again."
+	},
+	verify_email_activated: {
+		status: 400,
+		message: "This email has already been activated."
 	}
 }
 
@@ -83,6 +97,10 @@ msg.stripe = {
 	card_create: {
 		status: 500,
 		message: "An error occurred adding the card information. Please try again later."
+	},
+	card_delete: {
+		status: 500,
+		message: "An error occurred deleting the card information. Please try again later."
 	},
 	charge_create: {
 		status: 500,

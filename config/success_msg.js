@@ -13,6 +13,12 @@ msg.user = {
 	register: {
 		status: 200,
 		message: "Successfully created user."
+	},
+
+	//Verify
+	verify: {
+		status: 200,
+		message: "Successfully activated email address. You may now login."
 	}
 }
 
@@ -24,6 +30,10 @@ msg.stripe = {
 	card_create: {
 		status: 200,
 		message: "Successfully created card info."
+	},
+	card_delete: {
+		status: 200,
+		message: "Successfully deleted card info."
 	},
 	charge_create: {
 		status: 200,
