@@ -67,7 +67,7 @@ apiRoutes.use(function(req, res, next) {
 app.use('/auth', apiRoutes);
 
 router.post('/login', function(req, res, next) {
-  var select_query = "SELECT id, customer_id, first_name, last_name, email, password FROM users WHERE email = ?";
+  var select_query = "SELECT id, customer_id, first_name, last_name, email, activated, password FROM users WHERE email = ?";
 
   if (!req.body.email) {
     return next(error_msg.user.login_no_email);
@@ -98,7 +98,8 @@ router.post('/login', function(req, res, next) {
               customer_id: user.customer_id,
               first_name: user.first_name,
               last_name: user.last_name,
-              email: user.email
+              email: user.email,
+              activated: user.activated
             };
             var token = jwt.sign(payload, config.token_secret, {
               expiresIn: "2 days"
