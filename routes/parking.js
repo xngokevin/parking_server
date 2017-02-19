@@ -69,7 +69,7 @@ router.get('/location', function(req, res, next) {
 
 router.get('/location/:id', function(req, res, next) {
   console.log("HERE");
-  var select_query = "SELECT id, space_id, status FROM parking_space WHERE location_id = ?";
+  var select_query = "SELECT id, location_id, space_id, status FROM parking_space WHERE location_id = ?";
   /*** Query for selecting parking information from location id***/
   parking_db.query(select_query, [req.params.id], function(err, results) {
     if(err) {

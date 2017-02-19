@@ -144,7 +144,7 @@ router.post('/charge', function(req, res, next) {
       hours: 1
     }
   */
-
+  console.log(req.body);
 
   if(!req.body.parking_id) {
     return next(error_msg.stripe.no_parking_id);
@@ -158,26 +158,35 @@ router.post('/charge', function(req, res, next) {
     return next(error_msg.stripe.no_location_id);
   }
 
-  var select_query = "SELECT * FROM parking_space WHERE id = ?";
+  var select_query = "SELECT * FROM parking_space WHERE location_id = ? AND space_id = ?";
   parking_db.getConnection(function(err, connection) {
     if(err) {
+      console.log(err);
       return next(error_msg.global.error);
     }
     else {
+      console.log('here');
       /*** Query for selecting parking spot information ***/
-      connection.query(select_query, [req.body.parking_id], function(err, results) {
-        console.log(err);
+      connection.query(select_query, [req.body.location_id, req.body.parking_id], function(err, results) {
         if(err) {
-            connection.release();
+          console.log(err);
+          connection.release();
           return next(error_msg.global.error);
         }
+        if(results.length == 0) {
+          console.log(error_msg.stripe.no_parking_space);
+          connection.release();          
+          return next(error_msg.stripe.no_parking_space);
+        }
         else {
+          console.log("HERE");
           //Parking spot details
           var parking_spot = results[0];
+          console.log(parking_spot);
           //Check status of parking spot
           if(parking_spot.status == "occupied") {
             //If occupied, return an error
-              connection.release();
+            connection.release();
             return next(error_msg.stripe.parking_occupied);
           }
 
@@ -192,15 +201,14 @@ router.post('/charge', function(req, res, next) {
             receipt_email: req.decoded.email,
             statement_descriptor: "Parking"
           }).then(function(charge) {
-            var update_query = "UPDATE parking_space SET status = ?, occupied_by = ?, customer_id = ?,start_time = ?, end_time = ?, transaction_id = ? WHERE id = ?";
+            var update_query = "UPDATE parking_space SET status = ?, occupied_by = ?, customer_id = ?,start_time = ?, end_time = ?, transaction_id = ? WHERE location_id = ? AND space_id = ?";
             var start_time = new Date().toISOString().slice(0, 19).replace('T', ' ');
             var end_time = new Date().addHours(req.body.hours).toISOString().slice(0, 19).replace('T', ' ');
-            console.log(err);
             /*** Query for updating parking spot information ***/
-            connection.query(update_query, ["occupied", req.decoded.email, req.decoded.customer_id , start_time, end_time, charge.id, req.body.parking_id], function(err, results) {
+            connection.query(update_query, ["occupied", req.decoded.email, req.decoded.customer_id , start_time, end_time, charge.id, req.body.location_id, req.body.parking_id], function(err, results) {
               if(err) {
-                  connection.release();
                 console.log(err);
+                connection.release();
                 return next(error_msg.global.error);
               }
               else {
@@ -211,11 +219,12 @@ router.post('/charge', function(req, res, next) {
                 console.log(charge);
                 connection.query(insert_query, [charge.id, charge.created, charge.customer, charge.amount, req.decoded.email, charge.invoice, charge.paid, charge.refunded, req.body.location_id, req.body.parking_id], function(err, results){
                   if(err){
-                      connection.release();
+                    connection.release();
                     console.log(err);
                     return next(error_msg.global.error);
-                  }else{
-                      connection.release();
+                  }
+                  else{
+                    connection.release();
                     console.log("SUCCESS");
                   }
                 })
@@ -223,6 +232,7 @@ router.post('/charge', function(req, res, next) {
               }
             })
           }).catch(function(err) {
+            console.log(err);
             return next(error_msg.global.error);
           })
         }

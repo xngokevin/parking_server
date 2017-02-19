@@ -121,6 +121,10 @@ msg.stripe = {
 	parking_occupied: {
 		status: 403,
 		message: "Parking spot is currently occupied"
+	},
+	no_parking_space: {
+		status: 404,
+		message: "Unable to find parking spot. Please select a different spot."
 	}
 }
 
