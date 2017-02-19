@@ -17,6 +17,7 @@ config.smtp_transport = {
     }
 }
 
+
 config.stripe_test_key = "sk_test_BQT21ldl57cgA5wN9BmUl4E9";
 config.stripe_live_key = "sk_live_1bdO8r04BkwIIE48mCKcf7Dy";
 

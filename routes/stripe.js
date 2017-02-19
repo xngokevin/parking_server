@@ -168,6 +168,7 @@ router.post('/charge', function(req, res, next) {
       connection.query(select_query, [req.body.parking_id], function(err, results) {
         console.log(err);
         if(err) {
+            connection.release();
           return next(error_msg.global.error);
         }
         else {
@@ -176,6 +177,7 @@ router.post('/charge', function(req, res, next) {
           //Check status of parking spot
           if(parking_spot.status == "occupied") {
             //If occupied, return an error
+              connection.release();
             return next(error_msg.stripe.parking_occupied);
           }
 
@@ -195,8 +197,9 @@ router.post('/charge', function(req, res, next) {
             var end_time = new Date().addHours(req.body.hours).toISOString().slice(0, 19).replace('T', ' ');
             console.log(err);
             /*** Query for updating parking spot information ***/
-            parking_db.query(update_query, ["occupied", req.decoded.email, req.decoded.customer_id , start_time, end_time, charge.id, req.body.parking_id], function(err, results) {
+            connection.query(update_query, ["occupied", req.decoded.email, req.decoded.customer_id , start_time, end_time, charge.id, req.body.parking_id], function(err, results) {
               if(err) {
+                  connection.release();
                 console.log(err);
                 return next(error_msg.global.error);
               }
@@ -206,11 +209,13 @@ router.post('/charge', function(req, res, next) {
                 var insert_query= "INSERT INTO transactions (transaction_id, created, customer_id, amount, failure_code, failure_message, email, invoice, paid, refunded, location_id, parking_space_id) VALUES (?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?, ?, ?)";
                 var created = new Date();
                 console.log(charge);
-                parking_db.query(insert_query, [charge.id, charge.created, charge.customer, charge.amount, req.decoded.email, charge.invoice, charge.paid, charge.refunded, req.body.location_id, req.body.parking_id], function(err, results){
+                connection.query(insert_query, [charge.id, charge.created, charge.customer, charge.amount, req.decoded.email, charge.invoice, charge.paid, charge.refunded, req.body.location_id, req.body.parking_id], function(err, results){
                   if(err){
+                      connection.release();
                     console.log(err);
                     return next(error_msg.global.error);
                   }else{
+                      connection.release();
                     console.log("SUCCESS");
                   }
                 })
