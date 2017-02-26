@@ -4,23 +4,23 @@ var app = express();
 var router = express.Router();
 var apiRoutes = express.Router();
 
-//Config
+// Config
 var config = require('../config/config');
 var error_msg = require('../config/error_msg');
 var success_msg = require('../config/success_msg');
 
-//Stripe
+// Stripe
 var stripe = require("stripe")(config.stripe_test_key);
 
-//Nodemailer for sending email
+// Nodemailer for sending email
 const nodemailer = require('nodemailer');
 var transporter = nodemailer.createTransport(config.smtp_transport);
 
-//Database
+// Database
 var mysql = require('mysql');
 var parking_db = parkingPoolCreate();
 
-//Random string generator
+// Random string generator
 var crypto = require('crypto');
 
 var http = require('http');
@@ -30,68 +30,98 @@ var methodOverride = require('method-override')
 var bcrypt = require('bcrypt');
 var salt = bcrypt.genSaltSync(10);
 
-//Parse application/x-www-form-urlencoded
+// Logger
+var winston = require('winston');
+var logger = new(winston.Logger)({
+  transports: [
+    new(winston.transports.Console)(),
+    new(winston.transports.File)({
+      filename: 'logs/user.log'
+    })
+  ]
+});
+
+// Parse application/x-www-form-urlencoded
 router.use(bodyParser.urlencoded({
   extended: true
 }))
-//Parse application/json
+// Parse application/json
 router.use(bodyParser.json())
 router.use(methodOverride())
 
 
 
-//Route middleware to verify a token
+// Route middleware to verify a token
 apiRoutes.use(function(req, res, next) {
 
-  // check header or url parameters or post parameters for token
+  //  check header or url parameters or post parameters for token
   var token = req.body.token || req.query.token || req.headers['x-access-token'];
 
-  // decode token
+  //  decode token
   if (token) {
-    // verifies secret and checks exp
+    //  verifies secret and checks exp
     jwt.verify(token, app.get('token_secret'), function(err, decoded) {
       if (err) {
         return next(error_msg.global.invalid_token);
-      } else {
-        // if everything is good, save to request for use in other routes
+      }
+      else {
+        //  if everything is good, save to request for use in other routes
         req.decoded = decoded;
         next();
       }
     });
-  } else {
+  }
+  else {
     return next(config.error_msg.global.no_token);
   }
 });
 
-//Apply to routes that require authorization
+// Apply to routes that require authorization
 app.use('/auth', apiRoutes);
 
 router.post('/login', function(req, res, next) {
   var select_query = "SELECT id, customer_id, first_name, last_name, email, activated, password FROM users WHERE email = ?";
 
+  // Check for email
   if (!req.body.email) {
     return next(error_msg.user.login_no_email);
   }
 
+  // Check for password
   if (!req.body.password) {
     return next(error_msg.user.login_no_password);
   }
 
+  // Connect to database
   parking_db.getConnection(function(err, connection) {
     if (err) {
+
+      logger.log('error', err);
       return next(error_msg.global.error);
     }
     else {
+
+      //Sql query
       connection.query(select_query, [req.body.email], function(err, results) {
         if (err) {
+
+          connection.release();
+          logger.log('error', err);
           return next(error_msg.user.login);
         }
         if (results.length == 0) {
+
+          connection.release();
           return next(error_msg.user.login_no_user);
-        } 
+        }
         else {
+
+          connection.release();
+
+          //User retrieved from databse
           var user = results[0];
 
+          // Check if passwords 
           if (bcrypt.compareSync(req.body.password, user.password)) {
             var payload = {
               id: user.id,
@@ -105,10 +135,14 @@ router.post('/login', function(req, res, next) {
               expiresIn: "2 days"
             })
             payload.token = token;
+
+            logger.log('info', req.body.email + ": Successfully logged in user")
             res.send({
               user: payload
             });
-          } else {
+          }
+          else {
+            logger.log('error', req.body.email + ": Incorrect password for user");
             return next(error_msg.user.login_incorrect_password);
           }
         }
@@ -122,48 +156,64 @@ router.post('/register', function(req, res, next) {
   var insert_query = "INSERT INTO users SET ?";
   var user, email_key;
 
+  // Check for first name
   if (!req.body.first_name) {
     return next(error_msg.user.register_no_first_name);
   }
 
+  // Check for last name
   if (!req.body.last_name) {
     return next(error_msg.user.register_no_last_name)
   }
 
+  // Check for email address
   if (!req.body.email) {
     return next(error_msg.user.register_no_email);
   }
 
+  // Check for password
   if (!req.body.password) {
     return next(error_msg.user.register_no_password);
   }
+
+  //Establish database connection
   parking_db.getConnection(function(err, connection) {
     if (err) {
+
+      logger.log('error', err);
       return next(error_msg.global.error);
-    } 
+    }
     else {
       connection.query(select_query, [req.body.email], function(err, results) {
         if (err) {
+
+          logger.log('error', err);
           connection.release();
           return next(error_msg.user.register);
         }
         if (results.length != 0) {
           connection.release();
           return next(error_msg.user.register_exists);
-        } else {
+        }
+        else {
           stripe.customers.create({
             description: '',
             email: req.body.email
           }, function(err, customer) {
             if (err) {
-              console.log(err);
+              logger.log('error', err);
+              connection.release();
               return next(error_mst.stripe.customer_create);
-            } else {
+            }
+            else {
               bcrypt.hash(req.body.password, salt, function(err, hash) {
                 if (err) {
+                  logger.log('error', err);
+                  connection.release();
                   return res.send(error_msg.global.error);
-                } else {
-                  email_key =  crypto.randomBytes(52).toString('hex');
+                }
+                else {
+                  email_key = crypto.randomBytes(52).toString('hex');
                   user = {
                     customer_id: customer.id,
                     first_name: req.body.first_name,
@@ -175,29 +225,33 @@ router.post('/register', function(req, res, next) {
                   }
                   connection.query(insert_query, user, function(err, results) {
                     if (err) {
+                      logger.log('error', err);
                       connection.release();
                       return next(error_msg.user.register);
-                    } else {
+                    }
+                    else {
                       connection.release();
 
-                      //Send email with link for verification
-                      host=req.get('host');
-                      link="http://" + req.get('host') + "/user/verify/" + email_key;
-                      console.log(link);
-                      mail_options={
-                          to : req.body.email,
-                          subject : "Email Verification at Online Parking",
-                          html : "Hello,<br> Please click on the link to verify your email.<br><a href=" + link + ">Click here to verify</a>" 
+                      // Create email verification link
+                      host = req.get('host');
+                      link = "http://" + req.get('host') + "/user/verify/" + email_key;
+                      mail_options = {
+                        to: req.body.email,
+                        subject: "Email Verification at Online Parking",
+                        html: "Hello,<br> Please click on the link to verify your email.<br><a href=" + link + ">Click here to verify</a>"
                       }
-                      transporter.sendMail(mail_options, (error, info) => {
-                          if (error) {
-                            return console.log(error);
-                          }
-                          else {
-                            res.send(success_msg.user.register);
 
-                          }
-                          console.log('Message %s sent: %s', info.messageId, info.response);
+                      // Send email with link for verification
+                      transporter.sendMail(mail_options, (error, info) => {
+                        if (error) {
+                          logger.log('error', error);
+                          res.send(success_msg.user.register);
+                        }
+                        else {
+                          logger.log('info', req.body.email + ": Successfully created account for user")
+                          res.send(success_msg.user.register);
+                        }
+                        console.log('Message %s sent: %s', info.messageId, info.response);
                       });
                     }
                   })
@@ -213,39 +267,48 @@ router.post('/register', function(req, res, next) {
 
 
 router.put('/verify/:email_key', function(req, res, next) {
-  if(!req.params.email_key) {
+  //Check for email verification key
+  if (!req.params.email_key) {
     return next(error_msg.user.verify_no_email_key);
   }
   parking_db.getConnection(function(err, connection) {
-    if(err) {
+    if (err) {
+      logger.log('error', err);
       return next(error_msg.global.error);
     }
     else {
-      var select_query = "SELECT activated FROM users WHERE email_key = ?";
+      var select_query = "SELECT email, activated FROM users WHERE email_key = ?";
       connection.query(select_query, [req.params.email_key], function(err, results) {
-        if(err) {
-          console.log(err);
+        if (err) {
+          logger.log('error', err);
+          connection.release();
           return next(error_msg.global.error);
         }
-        if(results.length === 0) {
+        if (results.length === 0) {
+          connection.release();
           return next(error_msg.user.verify_invalid_email_key);
         }
         var user = results[0];
 
-        if(user.activated == 1) {
+        if (user.activated == 1) {
+          connection.release();
           return next(error_msg.user.verify_email_activated);
         }
         else {
           var update_query = "UPDATE users SET activated = 1, email_key = NULL WHERE email_key = ?";
           connection.query(update_query, [req.params.email_key], function(err, results) {
-            if(err) {
-              console.log(err);
+            if (err) {
+              logger.log('error', err);
+              connection.release();
               return next(error_msg.global.error);
             }
-            if(results.changedRows == 0) {
+            if (results.changedRows == 0) {
+              connection.release();
               return next(error_msg.user.verify_invalid_email_key);
             }
             else {
+              connection.release();
+              logger.log('info', user.email + "Successfully verified email address for user");
               res.send(success_msg.user.verify);
             }
           });
@@ -256,6 +319,7 @@ router.put('/verify/:email_key', function(req, res, next) {
 });
 
 router.use(function(err, req, res, next) {
+  logger.log('error', err);
   res.status(err.status || 500);
   res.send({
     message: err.message || "Internal server error."
