@@ -192,7 +192,7 @@ router.post('/charge', function(req, res, next) {
 
           //Amount to be charged (1 dollar per hour)
           var amount = req.body.hours * 100;
-          console.log(req.decoded);
+          //console.log(req.decoded);
           /*** Create a charge with Stripe API ***/
           stripe.charges.create({
             amount: amount,
@@ -202,8 +202,10 @@ router.post('/charge', function(req, res, next) {
             statement_descriptor: "Parking"
           }).then(function(charge) {
             var update_query = "UPDATE parking_space SET status = ?, occupied_by = ?, customer_id = ?,start_time = ?, end_time = ?, transaction_id = ? WHERE location_id = ? AND space_id = ?";
-            var start_time = new Date().toISOString().slice(0, 19).replace('T', ' ');
-            var end_time = new Date().addHours(req.body.hours).toISOString().slice(0, 19).replace('T', ' ');
+            var date = new Date();
+            var start_time = date.getFullYear() + "-" + (date.getMonth()+1) + "-" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+            date.setHours(date.getHours() + parseInt(req.body.hours));
+            var end_time = date.getFullYear() + "-" + (date.getMonth()+1) + "-" + date.getDate() + " " + date.getHours()+ ":" + date.getMinutes() + ":" + date.getSeconds();
             /*** Query for updating parking spot information ***/
             connection.query(update_query, ["occupied", req.decoded.email, req.decoded.customer_id , start_time, end_time, charge.id, req.body.location_id, req.body.parking_id], function(err, results) {
               if(err) {
@@ -216,7 +218,7 @@ router.post('/charge', function(req, res, next) {
                 res.send(success_msg.stripe.charge_create);
                 var insert_query= "INSERT INTO transactions (transaction_id, created, customer_id, amount, failure_code, failure_message, email, invoice, paid, refunded, location_id, parking_space_id) VALUES (?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?, ?, ?)";
                 var created = new Date();
-                console.log(charge);
+                //console.log(charge);
                 connection.query(insert_query, [charge.id, charge.created, charge.customer, charge.amount, req.decoded.email, charge.invoice, charge.paid, charge.refunded, req.body.location_id, req.body.parking_id], function(err, results){
                   if(err){
                     connection.release();
