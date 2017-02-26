@@ -22,6 +22,13 @@ msg.user = {
 	}
 }
 
+msg.parking = {
+	unoccupy: {
+		status: 200,
+		message: "Successfully processed request."
+	}
+}
+
 msg.stripe = {
 	customer_create: {
 		status: 200,
