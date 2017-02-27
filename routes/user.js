@@ -23,6 +23,9 @@ var parking_db = parkingPoolCreate();
 // Random string generator
 var crypto = require('crypto');
 
+// Asynchronous function helper
+var async = require('async');
+
 var http = require('http');
 var jwt = require('jsonwebtoken');
 var bodyParser = require('body-parser');
@@ -72,7 +75,7 @@ router.use(function(req, res, next) {
     });
   }
   else {
-    return next(error_msg.global.no_token);
+    return next(config.error_msg.global.no_token);
   }
 });
 
@@ -337,7 +340,27 @@ router.get('/auth/transaction', function(req, res, next ) {
             return next(error_msg.user.no_transaction);
           }
           else {
-            res.send(results);
+            var select_query = "SELECT name, address, description FROM locations WHERE id = ?";
+            async.forEachOf(results, function (value, key, callback) {
+              connection.query(select_query, [value.location_id], function(err, location) {
+                if(err) {
+                  logger.log('error', err)
+                  return next(error_msg.global.error);
+                }                
+                if(results.length != 0) {
+                  results[key].location = location[0];
+                  callback();
+                }
+              });
+            }, function(err) {
+              if(err) {
+                logger.log('error', err)
+                return next(error_msg.global.error);
+              }
+              else {
+                res.send(results);
+              }
+            });
           }
         }
       })

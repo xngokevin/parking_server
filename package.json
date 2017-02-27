@@ -9,6 +9,7 @@
     "start": "node app.js"
   },
   "dependencies": {
+    "async": "^2.1.5",
     "bcrypt": "^0.8.7",
     "body-parser": "^1.15.2",
     "express": "^4.14.0",
