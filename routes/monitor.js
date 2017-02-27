@@ -61,14 +61,14 @@ var query = "SELECT * FROM parking_space;";
                          counter = 0;
                      }
                      counter++;
-                     console.log("COUNTER: " + counter);
+                     //console.log("COUNTER: " + counter);
                      for (var i = 0; i < spaces.length; i++) {
                          var date = new Date(spaces[i].end_time).toTimeString().split(" ")[0];
                          var dateSeconds = parseInt(date.split(":")[0]) * 3600 + parseInt(date.split(":")[1]) * 60 + parseInt(date.split(":"));
                          var difference = Math.abs(dateSeconds - todaySeconds);
-                         console.log("DIFFERENCE: " + difference);
+                         //console.log("DIFFERENCE: " + difference);
                          if (difference <= 900 && difference >= 840) {
-                             console.log("REPORTED REPORTED REPORTED!!!");
+                             //console.log("REPORTED REPORTED REPORTED!!!");
                              pusher.trigger('123', 'my-event',{
                                  "message": '15 Minutes Remaining'
                              })
