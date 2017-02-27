@@ -52,7 +52,7 @@ router.use(methodOverride())
 
 
 // Route middleware to verify a token
-apiRoutes.use(function(req, res, next) {
+router.use(function(req, res, next) {
 
   //  check header or url parameters or post parameters for token
   var token = req.body.token || req.query.token || req.headers['x-access-token'];
@@ -60,7 +60,7 @@ apiRoutes.use(function(req, res, next) {
   //  decode token
   if (token) {
     //  verifies secret and checks exp
-    jwt.verify(token, app.get('token_secret'), function(err, decoded) {
+    jwt.verify(token, config.token_secret, function(err, decoded) {
       if (err) {
         return next(error_msg.global.invalid_token);
       }
@@ -72,12 +72,12 @@ apiRoutes.use(function(req, res, next) {
     });
   }
   else {
-    return next(config.error_msg.global.no_token);
+    return next(error_msg.global.no_token);
   }
 });
 
 // Apply to routes that require authorization
-app.use('/auth', apiRoutes);
+app.use('/auth', router);
 
 router.post('/login', function(req, res, next) {
   var select_query = "SELECT id, customer_id, first_name, last_name, email, activated, password FROM users WHERE email = ?";
@@ -317,6 +317,34 @@ router.put('/verify/:email_key', function(req, res, next) {
     }
   })
 });
+
+router.get('/auth/transaction', function(req, res, next ) {
+  
+  var select_query = "SELECT * FROM transactions WHERE email = ?";
+  parking_db.getConnection(function(err, connection) {
+    if (err) {
+      logger.log('error', err)
+      return next(error_msg.global.error);
+    }
+    else {
+      connection.query(select_query, req.decoded.email, function(err, results) {
+        if(err) {
+          logger.log('error', err)
+          return next(error_msg.global.error);
+        }
+        else {
+          if (results.length == 0) {
+            return next(error_msg.user.no_transaction);
+          }
+          else {
+            res.send(results);
+          }
+        }
+      })
+    }
+  });
+});
+
 
 router.use(function(err, req, res, next) {
   logger.log('error', err);

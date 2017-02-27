@@ -17,6 +17,17 @@ var bodyParser = require('body-parser');
 var methodOverride = require('method-override')
 var unirest = require('unirest');
 
+// Logger
+var winston = require('winston');
+var logger = new(winston.Logger)({
+  transports: [
+    new(winston.transports.Console)(),
+    new(winston.transports.File)({
+      filename: 'logs/parking.log'
+    })
+  ]
+});
+
 //Parse application/x-www-form-urlencoded
 router.use(bodyParser.urlencoded({
   extended: true
@@ -53,7 +64,7 @@ router.use(function(req, res, next) {
 });
 
 //Apply to routes that require authorization
-app.use('/', router);
+app.use('/auth', router);
 
 router.get('/location', function(req, res, next) {
   var select_query = "SELECT id, name, description, address FROM locations";
@@ -69,9 +80,9 @@ router.get('/location', function(req, res, next) {
 });
 
 router.get('/location/:id', function(req, res, next) {
-  console.log("HERE");
   var select_query = "SELECT id, location_id, space_id, status FROM parking_space WHERE location_id = ?";
-  /*** Query for selecting parking information from location id***/
+  
+  //Query parking spots from location id
   parking_db.query(select_query, [req.params.id], function(err, results) {
     if(err) {
       console.log(err);
@@ -82,7 +93,6 @@ router.get('/location/:id', function(req, res, next) {
     }
   })
 });
-
 
 router.put('/unoccupy', function(req, res, next) {
   var update_query = "UPDATE parking_space SET status = 'unoccupied', transaction_id = NULL, occupied_by = NULL, customer_id = NULL, start_time = NULL, end_time = NULL WHERE id = ? AND customer_id = ?";
