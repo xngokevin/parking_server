@@ -24,17 +24,10 @@ router.use(bodyParser.urlencoded({
 router.use(bodyParser.json());
 router.use(methodOverride());
 
-var pusher = new Pusher({
-    appId: '304044',
-    key: '7d32043e34cd44fdc2cf',
-    secret: 'b14e87f13757b44d142c',
-    encrypted: true
-});
-
-var serviceAccount = require("../resources/online-parking-senior-design-firebase-adminsdk-88ryw-8377a0b369.json");
+var serviceAccount = require("../resources/parkingandroid-16ecf-firebase-adminsdk-h1ta3-193690839c.json");
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://online-parking-senior-design.firebaseio.com"
+    databaseURL: "https://parkingandroid-16ecf.firebaseio.com"
 });
 
 var counter=0;
@@ -69,8 +62,18 @@ var query = "SELECT * FROM parking_space;";
                          //console.log("DIFFERENCE: " + difference);
                          if (difference <= 900 && difference >= 840) {
                              //console.log("REPORTED REPORTED REPORTED!!!");
-                             pusher.trigger('123', 'my-event',{
-                                 "message": '15 Minutes Remaining'
+                             var payload = {
+                                 notification: {
+                                     body: "15 minutes left"
+                                 }
+                             };
+                             //var tokenQuery = ""
+                             var registrationToken = "eS5_B1SW3dE:APA91bG1sKrFO_wwM8evV3hJ1KODqGGEoLshZIFu8USSi2ZBV095W_evNPTczTURu7uQvERvOMxKw0HVcQ_RM1rKQ12R46klXzA6yCBqkCNgs_DKD4iYy4h6D7xdlvpEimRdD-4ty9qS";
+                             admin.messaging().sendToDevice(registrationToken, payload)
+                                 .then(function(response){
+                                     console.log("Sent Successfully: " + response);
+                                 }).catch(function(err){
+                                     console.log("An Error Occurred while sending: "+err);
                              })
                          }
                      }
