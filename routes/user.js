@@ -351,6 +351,9 @@ router.get('/auth/transaction', function(req, res, next ) {
                   results[key].location = location[0];
                   callback();
                 }
+                else {
+                  callback();
+                }
               });
             }, function(err) {
               if(err) {
