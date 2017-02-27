@@ -78,6 +78,11 @@ msg.user = {
 	verify_email_activated: {
 		status: 400,
 		message: "This email has already been activated."
+	},
+
+	no_transaction: {
+		status: 404,
+		message: "No transactions available"
 	}
 }
 
