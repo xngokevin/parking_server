@@ -63,8 +63,6 @@ router.use(function(req, res, next) {
     }
 });
 
-//Apply to routes that require authorization
-app.use('/auth', router);
 
 router.get('/location', function(req, res, next) {
   var select_query = "SELECT id, name, description, address FROM locations";

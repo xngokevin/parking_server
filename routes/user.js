@@ -2,7 +2,6 @@ const saltRounds = 10;
 var express = require('express');
 var app = express();
 var router = express.Router();
-var apiRoutes = express.Router();
 
 // Config
 var config = require('../config/config');
@@ -52,11 +51,8 @@ router.use(bodyParser.urlencoded({
 router.use(bodyParser.json())
 router.use(methodOverride())
 
-
-
-// Route middleware to verify a token
-router.use(function(req, res, next) {
-
+// Apply to routes that require authorization
+router.use('/auth', function(req, res, next) {
   //  check header or url parameters or post parameters for token
   var token = req.body.token || req.query.token || req.headers['x-access-token'];
 
@@ -77,10 +73,8 @@ router.use(function(req, res, next) {
   else {
     return next(config.error_msg.global.no_token);
   }
-});
 
-// Apply to routes that require authorization
-app.use('/auth', router);
+});;
 
 router.post('/login', function(req, res, next) {
   var select_query = "SELECT id, customer_id, first_name, last_name, email, activated, password FROM users WHERE email = ?";

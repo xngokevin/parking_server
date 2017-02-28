@@ -64,8 +64,6 @@ router.use(function(req, res, next) {
   }
 });
 
-//Apply to routes that require authorization
-app.use('/', router);
 
 //Create customer
 router.post('/customer', function(req, res, next) {
