@@ -320,17 +320,19 @@ router.get('/auth/transaction', function(req, res, next ) {
   var select_query = "SELECT * FROM transactions WHERE email = ?";
   parking_db.getConnection(function(err, connection) {
     if (err) {
-      logger.log('error', err)
+      logger.log('error', err);
       return next(error_msg.global.error);
     }
     else {
       connection.query(select_query, req.decoded.email, function(err, results) {
         if(err) {
-          logger.log('error', err)
+          logger.log('error', err);
+          connection.release();
           return next(error_msg.global.error);
         }
         else {
           if (results.length == 0) {
+            connection.release();
             return next(error_msg.user.no_transaction);
           }
           else {
@@ -350,11 +352,13 @@ router.get('/auth/transaction', function(req, res, next ) {
                 }
               });
             }, function(err) {
+              connection.release();
               if(err) {
                 logger.log('error', err)
                 return next(error_msg.global.error);
               }
               else {
+                logger.log('info', req.decoded.email + " Successfully retrieved transactions");
                 res.send(results);
               }
             });
