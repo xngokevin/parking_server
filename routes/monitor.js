@@ -121,7 +121,7 @@ var alert = function () {
     })
 }
 
-setInterval(alert, 6000);
+setInterval(alert, 60000);
 
 router.use(function (err, req, res, next) {
     res.status(err.status || 500);
