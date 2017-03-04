@@ -229,10 +229,10 @@ router.post('/charge', function(req, res, next) {
 
                 //Return success message
                 res.send(success_msg.stripe.charge_create);
-                var insert_query = "INSERT INTO transactions (transaction_id, created, customer_id, amount, failure_code, failure_message, email, invoice, paid, refunded, location_id, parking_space_id) VALUES (?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?, ?, ?)";
+                var insert_query = "INSERT INTO transactions (transaction_id, created, customer_id, amount, failure_code, failure_message, email, invoice, paid, refunded, location_id, parking_space_id, start_time, end_time) VALUES (?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?, ?, ?, ?, ?)";
                 var created = new Date();
                 var created_fixed = date.getFullYear() + "-" + (date.getMonth()+1) + "-" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
-                connection.query(insert_query, [charge.id, created_fixed , charge.customer, charge.amount, req.decoded.email, charge.invoice, charge.paid, charge.refunded, req.body.location_id, req.body.parking_id], function(err, results) {
+                connection.query(insert_query, [charge.id, created_fixed , charge.customer, charge.amount, req.decoded.email, charge.invoice, charge.paid, charge.refunded, req.body.location_id, req.body.parking_id, start_time, end_time], function(err, results) {
                   if (err) {
                   	logger.log('error', err);
                     connection.release();
