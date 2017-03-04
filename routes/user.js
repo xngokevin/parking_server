@@ -345,6 +345,9 @@ router.get('/auth/transaction', function(req, res, next ) {
               if(difference > 0) {
                 results[key].in_progress = true;
               }
+              else {
+                results[key].in_progress = false;
+              }
               connection.query(select_query, [value.location_id], function(err, location) {
                 if(err) {
                   logger.log('error', err)
