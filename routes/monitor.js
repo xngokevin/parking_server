@@ -67,7 +67,7 @@ var alert = function () {
                         var difference = (dateSeconds - todaySeconds);
                         console.log("DIFFERENCE: " + difference);
 
-                        if (difference <= 900 && difference >= 840) {
+                        if (difference <= 900 && difference >= 840 && isToday == 1) {
                             //console.log("REPORTED REPORTED REPORTED!!!");
                             var payload = {
                                 notification: {
@@ -83,7 +83,7 @@ var alert = function () {
                                 console.log("An Error Occurred while sending: " + err);
                             })
                         }
-                        if (difference >= -900 && difference <= -840) {
+                        if (difference >= -900 && difference <= -840 && isToday == 1) {
                             var spaceId = spaces[i].space_id;
                             var locationId = spaces[i].location_id;
                             unirest.post('https://api.particle.io/v1/devices/3b0039000547333439313830/ultrasonic?access_token=89f8784572b79558afcd88d9c7b00c8e12934bf3')
