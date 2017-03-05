@@ -318,7 +318,7 @@ router.put('/verify/:email_key', function(req, res, next) {
 router.get('/auth/transaction', function(req, res, next ) {
   var today = getDateTime().split(" ")[1];
   var todaySeconds = parseInt(today.split(":")[0]) * 3600 + parseInt(today.split(":")[1] * 60) + parseInt(today.split(":"));
-  var select_query = "SELECT * FROM transactions WHERE email = ?";
+  var select_query = "SELECT * FROM transactions WHERE email = ? ORDER BY created DESC";
   parking_db.getConnection(function(err, connection) {
     if (err) {
       logger.log('error', err);
