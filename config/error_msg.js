@@ -66,6 +66,15 @@ msg.user = {
 		message: "This email is in use. Please use a different email."
 	},
 
+	//Forgot password
+	forgotpassword_no_email: {
+		status: 404,
+		message: "Missing email address."
+	},
+	forgotpassword_no_user: {
+		status: 404,
+		message: "This email address is not in use."
+	},
 	//Verify
 	verify_no_email_key: {
 		status: 404,

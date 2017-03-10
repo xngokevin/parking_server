@@ -118,7 +118,7 @@ router.post('/login', function(req, res, next) {
           //User retrieved from databse
           var user = results[0];
 
-          // Check if passwords 
+          // Check if passwords
           if (bcrypt.compareSync(req.body.password, user.password)) {
             var payload = {
               id: user.id,
@@ -207,7 +207,7 @@ router.post('/register', function(req, res, next) {
                 if (err) {
                   logger.log('error', err);
                   connection.release();
-                  return res.send(error_msg.global.error);
+                  return next(error_msg.global.error);
                 }
                 else {
                   email_key = crypto.randomBytes(52).toString('hex');
@@ -262,6 +262,66 @@ router.post('/register', function(req, res, next) {
   })
 });
 
+
+router.post('/forgotpassword', function(req, res, next) {
+
+  var update_query = "UPDATE users SET password_requested = ?, password_key = ? WHERE email = ?"
+
+  if(!req.body.email) {
+    return next(error_msg.user.forgotpassword_no_email);
+  }
+
+  var password_key = crypto.randomBytes(52).toString('hex');
+  var date = new Date();
+  var password_requested = date.getFullYear() + "-" + (date.getMonth()+1) + "-" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+
+  //Establish database connection
+  parking_db.getConnection(function(err, connection) {
+    if(err) {
+      logger.log('error', err);
+      connection.release();
+      return next(error_msg.global.error);
+    }
+    else {
+      connection.query(update_query, [password_requested, password_key, req.body.email], function(err, results) {
+        if(err) {
+          logger.log('error', err);
+          connection.release();
+          return next(error_msg.global.error);
+        }
+        if(results.affectedRows === 0) {
+          connection.release();
+          return next(error_msg.user.forgotpassword_no_user);
+        }
+        else {
+          connection.release();
+
+          // Create email verification link
+          host = req.get('host');
+          link = "http://" + req.get('host') + "/user/resetpassword/" + password_key;
+          mail_options = {
+            to: req.body.email,
+            subject: "Reset Password at Online Parking",
+            html: "Hello,<br> Please click on the link to reset your password.<br><a href=" + link + ">Click here to reset your password</a>"
+          }
+
+          // Send email with link for verification
+          transporter.sendMail(mail_options, (error, info) => {
+            if (error) {
+              logger.log('error', error);
+              res.send(success_msg.user.forgotpassword);
+            }
+            else {
+              logger.log('info', req.body.email + ": Successfully sent reset password link")
+              res.send(success_msg.user.forgotpassword);
+            }
+            console.log('Message %s sent: %s', info.messageId, info.response);
+          });
+        }
+      });
+    }
+  });
+});
 
 router.put('/verify/:email_key', function(req, res, next) {
   //Check for email verification key
@@ -352,7 +412,7 @@ router.get('/auth/transaction', function(req, res, next ) {
                 if(err) {
                   logger.log('error', err)
                   return next(error_msg.global.error);
-                }                
+                }
                 if(results.length != 0) {
                   results[key].location = location[0];
                   callback();

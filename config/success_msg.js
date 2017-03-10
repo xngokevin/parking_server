@@ -15,6 +15,12 @@ msg.user = {
 		message: "Successfully created user."
 	},
 
+	//Forgot password
+	forgotpassword: {
+		status: 200,
+		message: "Successfully sent reset password link."
+	},
+
 	//Verify
 	verify: {
 		status: 200,
