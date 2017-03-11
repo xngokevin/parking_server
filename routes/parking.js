@@ -111,7 +111,7 @@ router.put('/unoccupy', function(req, res, next) {
           else {
             unirest.post('https://api.particle.io/v1/devices/3b0039000547333439313830/servo?access_token=89f8784572b79558afcd88d9c7b00c8e12934bf3')
             .headers({'Accept': 'application/json', 'Content-Type': 'application/json'})
-            .send({ "arg": "close"})
+            .send({ "arg": "open"})
             .end(function (response) {
               console.log(response.body);
               res.send(success_msg.parking.unoccupy);

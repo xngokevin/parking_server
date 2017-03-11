@@ -18,6 +18,7 @@ var http = require('http');
 var jwt = require('jsonwebtoken');
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override')
+var unirest = require('unirest');
 
 // Logger
 var winston = require('winston');
@@ -228,7 +229,6 @@ router.post('/charge', function(req, res, next) {
               	logger.log('info', req.decoded.email + ": Successfully updated parking spot");
 
                 //Return success message
-                res.send(success_msg.stripe.charge_create);
                 var insert_query = "INSERT INTO transactions (transaction_id, created, customer_id, amount, failure_code, failure_message, email, invoice, paid, refunded, location_id, parking_space_id, start_time, end_time) VALUES (?, ?, ?, ?, NULL, NULL, ?, ?, ?, ?, ?, ?, ?, ?)";
                 var created = new Date();
                 var created_fixed = date.getFullYear() + "-" + (date.getMonth()+1) + "-" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
@@ -243,8 +243,14 @@ router.post('/charge', function(req, res, next) {
                     connection.release();
                   }
                 })
-
               }
+							unirest.post('https://api.particle.io/v1/devices/3b0039000547333439313830/servo?access_token=89f8784572b79558afcd88d9c7b00c8e12934bf3')
+							.headers({'Accept': 'application/json', 'Content-Type': 'application/json'})
+							.send({ "arg": "close"})
+							.end(function (response) {
+								logger.log('info', req.decoded.email + ": Successfully closed gate");
+                res.send(success_msg.stripe.charge_create);
+							});
             })
           }).catch(function(err) {
             logger.log('error', err);
