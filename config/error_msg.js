@@ -95,6 +95,13 @@ msg.user = {
 	}
 }
 
+msg.parking = {
+	unoccupy : {
+		status: 404,
+		message: "An error occurred unoccupying the parking spot. Please contact support for assistance."
+	}
+}
+
 msg.stripe = {
 	customer_create: {
 		status: 500,

@@ -20,12 +20,12 @@ app.use('/api/v1/stripe', stripe);
 //Parking route
 app.use('/api/v1/parking', parking);
 
- app.use('/api/v1/monitor', monitor);
+app.use('/api/v1/monitor', monitor);
 
 
-        var port = process.env.PORT || 8080;
-        app.listen(port, function(){
-                console.log("Express server listening on port %d in %s mode", port, app.settings.env);
-        });
+var port = process.env.PORT || 8080;
+app.listen(port, function(){
+        console.log("Express server listening on port %d in %s mode", port, app.settings.env);
+});
 
 
