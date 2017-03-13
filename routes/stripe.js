@@ -154,18 +154,19 @@ router.delete('/card', function(req, res, next) {
 router.post('/charge', function(req, res, next) {
 
 	logger.log('info', req.decoded.email + ": Create charge");
+	console.log(req.body);
+  // if (!req.body.parking_id) {
+  // 	console.log(req.body);
+  //   return next(error_msg.stripe.no_parking_id);
+  // }
 
-  if (!req.body.parking_id) {
-    return next(error_msg.stripe.no_parking_id);
-  }
+  // if (!req.body.hours) {
+  //   return next(error_msg.stripe.no_parking_hours);
+  // }
 
-  if (!req.body.hours) {
-    return next(error_msg.stripe.no_parking_hours);
-  }
-
-  if (!req.body.location_id) {
-    return next(error_msg.stripe.no_location_id);
-  }
+  // if (!req.body.location_id) {
+  //   return next(error_msg.stripe.no_location_id);
+  // }
 
 	logger.log('info', req.decoded.email + ": location_id = " + req.body.parking_id + " hours = " + req.body.hours);
 

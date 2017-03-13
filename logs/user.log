@@ -1,2 +1,62 @@
 {"status":404,"message":"Incorrect email or password. Please try again.","level":"error","timestamp":"2017-03-04T23:00:41.776Z"}
 {"level":"info","message":"test1@uciparking.com: Successfully logged in user","timestamp":"2017-03-04T23:01:00.561Z"}
+{"level":"info","message":"test1@uciparking.com: Successfully logged in user","timestamp":"2017-03-13T04:06:42.333Z"}
+{"level":"info","message":"test1@uciparking.com: Successfully logged in user","timestamp":"2017-03-13T04:18:00.752Z"}
+{"level":"info","message":"tranad2@uci.edu: Successfully logged in user","timestamp":"2017-03-13T05:32:28.761Z"}
+{"level":"info","message":"tranad2@uci.edu: Successfully sent reset password link","timestamp":"2017-03-13T05:32:38.279Z"}
+{"level":"info","message":"tranad2@uci.edu: Successfully sent reset password link","timestamp":"2017-03-13T05:33:15.192Z"}
+{"level":"info","message":"tranad2@uci.edu: Successfully sent reset password link","timestamp":"2017-03-13T05:36:01.024Z"}
+{"level":"info","message":"test1@uciparking.com: Successfully logged in user","timestamp":"2017-03-13T05:41:16.088Z"}
+{"level":"info","message":"test1@uciparking.com: Successfully logged in user","timestamp":"2017-03-13T05:41:56.950Z"}
+{"level":"info","message":"test1@uciparking.com: Successfully logged in user","timestamp":"2017-03-13T05:42:28.247Z"}
+{"level":"info","message":"test1@uciparking.com: Successfully logged in user","timestamp":"2017-03-13T05:46:33.649Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T05:46:57.130Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T05:47:02.774Z"}
+{"level":"info","message":"test1@uciparking.com: Successfully logged in user","timestamp":"2017-03-13T05:59:35.265Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T05:59:39.360Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:00:53.509Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:00:53.612Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:01:54.841Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:01:57.461Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:02:33.664Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:04:38.715Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:04:47.318Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:05:01.512Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:05:01.593Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:06:05.628Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:09:42.885Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:09:51.773Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:09:57.262Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:10:23.401Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:12:00.116Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:12:03.565Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:12:10.146Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:12:10.343Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:12:16.457Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:12:16.461Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:14:12.091Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:14:14.025Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:14:14.036Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:14:38.131Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:14:38.215Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:15:00.164Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:15:00.197Z"}
+{"level":"info","message":"test1@uciparking.com: Successfully logged in user","timestamp":"2017-03-13T06:16:08.307Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:16:11.865Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:16:20.181Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:17:18.263Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:17:18.342Z"}
+{"status":404,"message":"No transactions available","level":"error","timestamp":"2017-03-13T06:24:16.244Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:24:25.590Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:24:59.565Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:24:59.747Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:25:13.425Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:25:32.231Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:25:37.033Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:25:40.590Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:26:14.652Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:26:22.096Z"}
+{"level":"info","message":"test1@uciparking.com Successfully retrieved transactions","timestamp":"2017-03-13T06:26:34.237Z"}
+{"level":"info","message":"tranad2@uci.edu: Successfully logged in user","timestamp":"2017-03-13T06:26:59.340Z"}
+{"status":404,"message":"No transactions available","level":"error","timestamp":"2017-03-13T06:27:09.415Z"}
+{"status":404,"message":"No transactions available","level":"error","timestamp":"2017-03-13T06:27:13.220Z"}

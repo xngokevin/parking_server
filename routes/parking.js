@@ -65,7 +65,7 @@ router.use(function(req, res, next) {
 
 
 router.get('/location', function(req, res, next) {
-  var select_query = "SELECT id, name, description, address FROM locations";
+  var select_query = "SELECT id, name, description, address, image FROM locations";
   /*** Query for selecting location information ***/
   parking_db.query(select_query, function(err, results) {
     if(err) {
@@ -79,7 +79,7 @@ router.get('/location', function(req, res, next) {
 
 router.get('/location/:id', function(req, res, next) {
   var select_query = "SELECT id, location_id, space_id, status FROM parking_space WHERE location_id = ?";
-  
+
   //Query parking spots from location id
   parking_db.query(select_query, [req.params.id], function(err, results) {
     if(err) {
@@ -93,30 +93,55 @@ router.get('/location/:id', function(req, res, next) {
 });
 
 router.put('/unoccupy', function(req, res, next) {
-  var update_query = "UPDATE parking_space SET status = 'unoccupied', transaction_id = NULL, occupied_by = NULL, customer_id = NULL, start_time = NULL, end_time = NULL WHERE id = ? AND customer_id = ?";
-
+  var update_query = "UPDATE parking_space SET status = 'unoccupied', transaction_id = NULL, occupied_by = NULL, customer_id = NULL, start_time = NULL, end_time = NULL WHERE location_id = ? AND space_id = ? AND occupied_by = ?";
   parking_db.getConnection(function(err, connection) {
     if (err) {
+      logger.log('error', err);
       return next(error_msg.global.error);
     }
     else {
-      connection.query(update_query, [req.body.id, req.decoded.customer_id], function (err, results) {
+      connection.query(update_query, [req.body.location_id, req.body.space_id, req.decoded.email], function (err, results) {
         if(err) {
+          connection.release();
+          logger.log('error', err);
           return next(error_msg.global.error);
         }
         else {
-          if(results.length == 0) {
-            console.log('nothing modified');
+          if(results.affectedRows == 0) {
+            connection.release();
+            logger.log('error', 'Unable to find parking spot');
+            return res.send(error_msg.parking.unoccupy);
           }
           else {
-            unirest.post('https://api.particle.io/v1/devices/3b0039000547333439313830/servo?access_token=89f8784572b79558afcd88d9c7b00c8e12934bf3')
-            .headers({'Accept': 'application/json', 'Content-Type': 'application/json'})
-            .send({ "arg": "open"})
-            .end(function (response) {
-              console.log(response.body);
-              res.send(success_msg.parking.unoccupy);
 
-            });
+            update_query = "UPDATE transactions SET end_time = ? WHERE email = ?";
+            var date = new Date();
+            var end_time = date.getFullYear() + "-" + (date.getMonth()+1) + "-" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+
+            connection.query(update_query, [end_time, req.decoded.email], function(err, results) {
+              if(err) {
+                connection.release();
+                logger.log('error', err);
+                return next(error_msg.global.error);
+              }
+              if(results.affectedRows == 0) {
+                connection.release();
+                logger.log('error', 'Unable to update transactions');
+                return res.send(error_msg.parking.unoccupy);
+              }
+              else {
+                connection.release();
+                unirest.post('https://api.particle.io/v1/devices/3b0039000547333439313830/servo?access_token=89f8784572b79558afcd88d9c7b00c8e12934bf3')
+                .headers({'Accept': 'application/json', 'Content-Type': 'application/json'})
+                .send({ "arg": "open"})
+                .end(function (response) {
+                  console.log(response.body);
+                  logger.log('info', req.decoded.email + 'Successfully unoccupied parking spot');
+                  res.send(success_msg.parking.unoccupy);
+
+                });
+              }
+            })
           }
         }
       });

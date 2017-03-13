@@ -323,7 +323,7 @@ router.post('/forgotpassword', function(req, res, next) {
   });
 });
 
-router.put('/verify/:email_key', function(req, res, next) {
+router.get('/verify/:email_key', function(req, res, next) {
   //Check for email verification key
   if (!req.params.email_key) {
     return next(error_msg.user.verify_no_email_key);
