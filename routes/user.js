@@ -376,9 +376,9 @@ router.get('/verify/:email_key', function(req, res, next) {
 });
 
 router.get('/auth/transaction', function(req, res, next ) {
-  var today = getDateTime().split(" ")[1];
-  var todaySeconds = parseInt(today.split(":")[0]) * 3600 + parseInt(today.split(":")[1] * 60) + parseInt(today.split(":"));
-  var select_query = "SELECT * FROM transactions WHERE email = ? ORDER BY created DESC";
+	var select_query = "SELECT * FROM transactions WHERE email = ? ORDER BY created DESC";
+	var today = getDateTime().split(" ")[1];
+	var todaySeconds = parseInt(today.split(":")[0]) * 3600 + parseInt(today.split(":")[1] * 60) + parseInt(today.split(":"));
   parking_db.getConnection(function(err, connection) {
     if (err) {
       logger.log('error', err);
@@ -399,9 +399,9 @@ router.get('/auth/transaction', function(req, res, next ) {
           else {
             var select_query = "SELECT name, address, description FROM locations WHERE id = ?";
             async.forEachOf(results, function (value, key, callback) {
-              var date = new Date(results[key].end_time).toTimeString().split(" ")[0];
-              var dateSeconds = parseInt(date.split(":")[0]) * 3600 + parseInt(date.split(":")[1]) * 60 + parseInt(date.split(":"));
-              var difference = Math.abs(dateSeconds - todaySeconds);
+            	var date = new Date(results[key].end_time).toTimeString().split(" ")[0];
+							var dateSeconds = parseInt(date.split(":")[0]) * 3600 + parseInt(date.split(":")[1]) * 60 + parseInt(date.split(":"));
+							var difference = (dateSeconds - todaySeconds);
               if(difference > 0) {
                 results[key].in_progress = true;
               }
@@ -475,6 +475,33 @@ function getDateTime() {
   return dateTime;
 }
 
+
+function getDateTime() {
+    var now = new Date();
+    var year = now.getFullYear();
+    var month = now.getMonth() + 1;
+    var day = now.getDate();
+    var hour = now.getHours();
+    var minute = now.getMinutes();
+    var second = now.getSeconds();
+    if (month.toString().length == 1) {
+        var month = '0' + month;
+    }
+    if (day.toString().length == 1) {
+        var day = '0' + day;
+    }
+    if (hour.toString().length == 1) {
+        var hour = '0' + hour;
+    }
+    if (minute.toString().length == 1) {
+        var minute = '0' + minute;
+    }
+    if (second.toString().length == 1) {
+        var second = '0' + second;
+    }
+    var dateTime = year + '/' + month + '/' + day + ' ' + hour + ':' + minute + ':' + second;
+    return dateTime;
+}
 
 function parkingPoolCreate() {
   var pool = mysql.createPool(config.parking_db, function(err) {
